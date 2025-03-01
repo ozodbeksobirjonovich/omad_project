@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Omad g'ildiragi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f5f5f5;
+      --text-color: #333;
+      --primary-color: #4a6cf7;
+      --secondary-color: #f07c30;
+      --accent-color: #61dafb;
+      --ticker-color: #333;
+      --button-bg: #3d4db5;
+      --button-text: white;
+      --modal-bg: rgba(255, 255, 255, 0.9);
+      --input-bg: white;
+      --input-border: #ddd;
+      --card-bg: white;
+      --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      --footer-bg: rgba(255, 255, 255, 0.95);
+      --footer-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    .dark-mode {
+      --bg-color: #121212;
+      --text-color: #f5f5f5;
+      --primary-color: #3d4db5;
+      --secondary-color: #f07c30;
+      --accent-color: #30cfd0;
+      --ticker-color: #f5f5f5;
+      --button-bg: #4a6cf7;
+      --button-text: white;
+      --modal-bg: rgba(30, 30, 30, 0.95);
+      --input-bg: #2d2d2d;
+      --input-border: #444;
+      --card-bg: #1e1e1e;
+      --card-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      --footer-bg: rgba(30, 30, 30, 0.95);
+      --footer-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+      padding: 20px;
+      padding-bottom: 90px; /* Space for footer */
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      gap: 20px;
+      min-height: calc(100vh - 40px);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .app-title {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: var(--text-color);
+      padding: 5px;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      flex: 1;
+    }
+
+    .wheel-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin: 20px 0;
+    }
+
+    .names-display {
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: var(--card-shadow);
+      transition: box-shadow 0.3s;
+      width: 100%;
+    }
+
+    .card:hover {
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 8px;
+    }
+
+    .deal-wheel {
+      --size: clamp(280px, 70vmin, 600px);
+      --lg-hs: 0 3%;
+      --lg-stop: 50%;
+      --lg: linear-gradient(
+          hsl(var(--lg-hs) 0%) 0 var(--lg-stop),
+          hsl(var(--lg-hs) 20%) var(--lg-stop) 100%
+        );
+      position: relative;
+      display: grid;
+      grid-gap: calc(var(--size) / 20);
+      align-items: center;
+      grid-template-areas:
+        "spinner"
+        "trigger";
+      font-size: calc(var(--size) / 21);
+    }
+
+    .deal-wheel > * {
+      grid-area: spinner;
+    }
+
+    .deal-wheel .btn-spin {
+      grid-area: trigger;
+      justify-self: center;
+    }
+
+    .spinner {
+      position: relative;
+      display: grid;
+      align-items: center;
+      grid-template-areas: "spinner";
+      width: var(--size);
+      height: var(--size);
+      transform: rotate(calc(var(--rotate, 0) * 1deg));
+      border-radius: 50%;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .spinner * {
+      grid-area: spinner;
+    }
+
+    .prize {
+      display: flex;
+      align-items: center;
+      padding: 0 calc(var(--size) / 6) 0 calc(var(--size) / 20);
+      width: 50%;
+      height: 50%;
+      transform-origin: center right;
+      transform: rotate(var(--rotate));
+      user-select: none;
+      font-weight: 500;
+    }
+
+    .ticker {
+      position: relative;
+      left: calc(var(--size) / -15);
+      width: calc(var(--size) / 10);
+      height: calc(var(--size) / 20);
+      background: var(--ticker-color);
+      z-index: 1;
+      clip-path: polygon(20% 0, 100% 50%, 20% 100%, 0% 50%);
+      transform-origin: center left;
+    }
+
+    .btn-spin {
+      color: var(--button-text);
+      background: var(--button-bg);
+      border: none;
+      font-size: inherit;
+      padding: 0.9rem 2rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+
+    .btn-spin:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn-spin:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn-spin:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      transform: none;
+    }
+
+    .is-spinning .spinner {
+      transition: transform 8s cubic-bezier(0.1, 0, 0.05, 1);
+    }
+
+    .is-spinning .ticker {
+      animation: tick 700ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes tick {
+      40% {
+        transform: rotate(-12deg);
+      }
+    }
+
+    .prize.selected .text {
+      color: white;
+      font-weight: 700;
+      animation: selected 800ms ease;
+    }
+
+    @keyframes selected {
+      25% {
+        transform: scale(1.25);
+        text-shadow: 1vmin 1vmin 0 hsla(0 0% 0% / 0.1);
+      }
+      40% {
+        transform: scale(0.92);
+        text-shadow: 0 0 0 hsla(0 0% 0% / 0.2);
+      }
+      60% {
+        transform: scale(1.02);
+        text-shadow: 0.5vmin 0.5vmin 0 hsla(0 0% 0% / 0.1);
+      }
+      75% {
+        transform: scale(0.98);
+      }
+      85% {
+        transform: scale(1);
+      }
+    }
+
+    /* Footer with fixed position */
+    .footer-controls {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--footer-bg);
+      box-shadow: var(--footer-shadow);
+      padding: 15px 0;
+      z-index: 100;
+      transition: background-color 0.3s;
+    }
+
+    .controls-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .name-input {
+      flex: 1;
+      max-width: 300px;
+      padding: 12px 15px;
+      font-size: 1rem;
+      border: 2px solid var(--input-border);
+      border-radius: 5px;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      transition: border-color 0.3s;
+    }
+
+    .name-input:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+
+    .add-name-btn, .clear-all-btn {
+      padding: 12px 20px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .add-name-btn:hover, .clear-all-btn:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .clear-all-btn {
+      background-color: #e74c3c;
+    }
+
+    .clear-all-btn:hover {
+      background-color: #c0392b;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background-color: var(--modal-bg);
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 90%;
+      width: 400px;
+      transform: scale(0.8);
+      transition: transform 0.3s;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      color: var(--text-color);
+    }
+
+    .selected-name {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 20px 0;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .modal-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .remove-btn {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    .continue-btn {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .name-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .name-tag {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .remove-name {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 1.2rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-message {
+      text-align: center;
+      margin: 20px 0;
+      font-style: italic;
+      color: var(--text-color);
+      opacity: 0.7;
+    }
+
+    .sound-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: 10px;
+    }
+
+    .sound-toggle input {
+      height: 0;
+      width: 0;
+      visibility: hidden;
+    }
+
+    .sound-toggle label {
+      cursor: pointer;
+      text-indent: -9999px;
+      width: 50px;
+      height: 25px;
+      background: var(--input-border);
+      display: block;
+      border-radius: 100px;
+      position: relative;
+    }
+
+    .sound-toggle label:after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 19px;
+      height: 19px;
+      background: #fff;
+      border-radius: 90px;
+      transition: 0.3s;
+    }
+
+    .sound-toggle input:checked + label {
+      background: var(--primary-color);
+    }
+
+    .sound-toggle input:checked + label:after {
+      left: calc(100% - 3px);
+      transform: translateX(-100%);
+    }
+
+    .sound-toggle label:active:after {
+      width: 26px;
+    }
+
+    @media (max-width: 768px) {
+      .app-title {
+        font-size: 1.5rem;
+      }
+      
+      .controls-container {
+        flex-wrap: wrap;
+      }
+      
+      .name-input {
+        max-width: none;
+      }
+      
+      .deal-wheel {
+        --size: clamp(200px, 80vmin, 400px);
+      }
+      
+      body {
+        padding-bottom: 130px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="header">
+      <h1 class="app-title">Omad g'ildiragi</h1>
+      <button class="theme-toggle" id="themeToggle">🌙</button>
+    </div>
+
+    <div class="main-content">
+      <!-- Wheel in center -->
+      <div class="wheel-container">
+        <div class="deal-wheel">
+          <ul class="spinner" id="spinner"></ul>
+          <div class="ticker"></div>
+          <button class="btn-spin" id="spinBtn">Aylantirish</button>
+        </div>
+      </div>
+      
+      <!-- Names list -->
+      <div class="names-display">
+        <div class="card">
+          <h2 class="card-title">O'quvchilar ro'yxati</h2>
+          <div class="name-list" id="nameList">
+            <!-- Names will be added here dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fixed footer for name input -->
+    <div class="footer-controls">
+      <div class="controls-container">
+        <input type="text" class="name-input" id="nameInput" placeholder="Ismni kiriting...">
+        <button class="add-name-btn" id="addNameBtn">Qo'shish</button>
+        <button class="clear-all-btn" id="clearAllBtn">Tozalash</button>
+        <div class="sound-toggle">
+          <input type="checkbox" id="soundToggle" checked />
+          <label for="soundToggle">Ovoz</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2 class="modal-title">Tanlangan ism:</h2>
+      <div class="selected-name" id="selectedName"></div>
+      <div class="modal-buttons">
+        <button class="modal-btn remove-btn" id="removeBtn">Olib tashlash</button>
+        <button class="modal-btn continue-btn" id="continueBtn">Davom etish</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM elements
+    const wheel = document.querySelector(".deal-wheel");
+    const spinner = wheel.querySelector(".spinner");
+    const trigger = wheel.querySelector("#spinBtn");
+    const ticker = wheel.querySelector(".ticker");
+    const nameInput = document.querySelector("#nameInput");
+    const addNameBtn = document.querySelector("#addNameBtn");
+    const nameList = document.querySelector("#nameList");
+    const modalOverlay = document.querySelector("#modalOverlay");
+    const selectedNameEl = document.querySelector("#selectedName");
+    const removeBtn = document.querySelector("#removeBtn");
+    const continueBtn = document.querySelector("#continueBtn");
+    const themeToggle = document.querySelector("#themeToggle");
+    const soundToggle = document.querySelector("#soundToggle");
+    const clearAllBtn = document.querySelector("#clearAllBtn");
+
+    // Sound effects
+    let spinSound = new Audio();
+    let winSound = new Audio();
+    let clickSound = new Audio();
+
+    // Create sounds
+    const createSounds = () => {
+      // We're simulating sounds with AudioContext API
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      
+      // Initialize audio context
+      const audioCtx = new AudioContext();
+      
+      // Simulating a spinning sound
+      const createSpinSound = () => {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        return { oscillator, gainNode };
+      };
+    };
+    
+    // Initialize sounds
+    createSounds();
+    
+    // Sound functions
+    const playSpinSound = () => {
+      if (soundToggle.checked) {
+        // Play spinning sound
+      }
+    };
+    
+    const playWinSound = () => {
+      if (soundToggle.checked) {
+        // Play winning sound
+      }
+    };
+    
+    const playClickSound = () => {
+      if (soundToggle.checked) {
+        // Play click sound
+      }
+    };
+
+    // State variables
+    let names = [];
+    const colors = [
+      "hsl(197 30% 43%)",
+      "hsl(173 58% 39%)",
+      "hsl(43 74% 66%)",
+      "hsl(27 87% 67%)",
+      "hsl(12 76% 61%)",
+      "hsl(350 60% 52%)",
+      "hsl(91 43% 54%)",
+      "hsl(140 36% 74%)"
+    ];
+    
+    // Variables for spinning
+    const spinClass = "is-spinning";
+    const selectedClass = "selected";
+    let tickerAnim;
+    let rotation = 0;
+    let currentSlice = 0;
+    let prizeNodes;
+    let prizeSlice = 360 / names.length || 360;
+
+    // Load names from localStorage
+    const loadNames = () => {
+      const savedNames = localStorage.getItem('wheelNames');
+      if (savedNames) {
+        names = JSON.parse(savedNames);
+      } else {
+        // Add demo names if no saved names
+        names = ["Sardor", "Malika", "Ali"];
+        saveNames();
+      }
+    };
+
+    // Save names to localStorage
+    const saveNames = () => {
+      localStorage.setItem('wheelNames', JSON.stringify(names));
+    };
+
+    // Initialize the wheel
+    const setupWheel = () => {
+      // Clear previous content
+      spinner.innerHTML = '';
+      
+      // If no names, show message
+      if (names.length === 0) {
+        nameList.innerHTML = '<p class="empty-message">Ismlar qo\'shilmagan</p>';
+        trigger.disabled = true;
+        return;
+      }
+      
+      // Remove empty message and enable spin button
+      trigger.disabled = false;
+      const emptyMessage = nameList.querySelector('.empty-message');
+      if (emptyMessage) emptyMessage.remove();
+      
+      // Update slice size
+      prizeSlice = 360 / names.length;
+      
+      // Create conic gradient for wheel segments
+      createConicGradient();
+      
+      // Create prize nodes
+      createPrizeNodes();
+      
+      // Get all prize nodes
+      prizeNodes = wheel.querySelectorAll(".prize");
+    };
+
+    // Create conic gradient background for the spinner
+    const createConicGradient = () => {
+      const gradientSegments = names.map((name, i) => {
+        const color = colors[i % colors.length];
+        return `${color} 0 ${(100 / names.length) * (names.length - i)}%`;
+      }).reverse();
+      
+      spinner.setAttribute(
+        "style",
+        `background: conic-gradient(from -90deg, ${gradientSegments.join(', ')});`
+      );
+    };
+
+    // Create prize nodes
+    const createPrizeNodes = () => {
+      const prizeOffset = Math.floor(180 / names.length);
+      
+      names.forEach((name, i) => {
+        const rotation = ((prizeSlice * i) * -1) - prizeOffset;
+        
+        spinner.insertAdjacentHTML(
+          "beforeend",
+          `<li class="prize" style="--rotate: ${rotation}deg">
+            <span class="text">${name}</span>
+          </li>`
+        );
+      });
+    };
+
+    // Animation for spinner
+    const runTickerAnimation = () => {
+      const spinnerStyles = window.getComputedStyle(spinner);
+      const values = spinnerStyles.transform.split("(")[1].split(")")[0].split(",");
+      const a = values[0];
+      const b = values[1];  
+      let rad = Math.atan2(b, a);
+      
+      if (rad < 0) rad += (2 * Math.PI);
+      
+      const angle = Math.round(rad * (180 / Math.PI));
+      const slice = Math.floor(angle / prizeSlice);
+
+      if (currentSlice !== slice) {
+        ticker.style.animation = "none";
+        setTimeout(() => ticker.style.animation = null, 10);
+        currentSlice = slice;
+      }
+      
+      tickerAnim = requestAnimationFrame(runTickerAnimation);
+    };
+
+    // Select a prize
+    const selectPrize = () => {
+      const selected = Math.floor(rotation / prizeSlice) % names.length;
+      prizeNodes[selected].classList.add(selectedClass);
+      
+      // Play win sound
+      playWinSound();
+      
+      // Show modal with selected name
+      selectedNameEl.textContent = names[selected];
+      modalOverlay.classList.add("active");
+      
+      // Store the selected name index for removal
+      removeBtn.dataset.index = selected;
+    };
+
+    // Add name handler
+    const addName = () => {
+      const name = nameInput.value.trim();
+      
+      if (name === '') return;
+      
+      // Play click sound
+      playClickSound();
+      
+      names.push(name);
+      
+      // Save to localStorage
+      saveNames();
+      
+      // Add to visual list
+      updateNamesList();
+      
+      // Setup the wheel
+      setupWheel();
+      
+      // Clear input
+      nameInput.value = '';
+      nameInput.focus();
+    };
+
+    // Update the visual names list
+    const updateNamesList = () => {
+      nameList.innerHTML = '';
+      
+      if (names.length === 0) {
+        nameList.innerHTML = '<p class="empty-message">Ismlar qo\'shilmagan</p>';
+        return;
+      }
+      
+      names.forEach((name, index) => {
+        const nameTag = document.createElement('div');
+        nameTag.className = 'name-tag';
+        nameTag.innerHTML = `
+          ${name}
+          <button class="remove-name" data-index="${index}">×</button>
+        `;
+        nameList.appendChild(nameTag);
+      });
+    };
+
+    // Remove name from the list
+    const removeName = (index) => {
+      // Play click sound
+      playClickSound();
+      
+      names.splice(index, 1);
+      saveNames();
+      updateNamesList();
+      setupWheel();
+    };
+
+    // Clear all names
+    const clearAllNames = () => {
+      if (confirm("Barcha ismlarni o'chirishni istaysizmi?")) {
+        names = [];
+        saveNames();
+        updateNamesList();
+        setupWheel();
+      }
+    };
+
+    // Event listeners
+    trigger.addEventListener("click", () => {
+      if (names.length === 0) return;
+      
+      // Play spin sound
+      playSpinSound();
+      
+      trigger.disabled = true;
+      
+      // Random rotation + multiple spins
+      rotation = Math.floor(Math.random() * 360 + 3600);
+      
+      // Reset previous selection
+      prizeNodes.forEach((prize) => prize.classList.remove(selectedClass));
+      
+      // Add spinning class
+      wheel.classList.add(spinClass);
+      
+      // Set the rotation
+      spinner.style.setProperty("--rotate", rotation);
+      
+      // Reset ticker animation
+      ticker.style.animation = "none";
+      
+      // Run ticker animation
+      runTickerAnimation();
+    });
+
+    spinner.addEventListener("transitionend", () => {
+      // Stop animation
+      cancelAnimationFrame(tickerAnim);
+      
+      // Calculate final rotation
+      rotation %= 360;
+      
+      // Select prize
+      selectPrize();
+      
+      // Remove spinning class
+      wheel.classList.remove(spinClass);
+      
+      // Update rotation property
+      spinner.style.setProperty("--rotate", rotation);
+      
+      // Re-enable button
+      trigger.disabled = false;
+    });
+
+    addNameBtn.addEventListener("click", addName);
+
+    nameInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") addName();
+    });
+
+    nameList.addEventListener("click", (e) => {
+      if (e.target.classList.contains("remove-name")) {
+        const index = parseInt(e.target.dataset.index);
+        removeName(index);
+      }
+    });
+
+    removeBtn.addEventListener("click", () => {
+      const index = parseInt(removeBtn.dataset.index);
+      removeName(index);
+      modalOverlay.classList.remove("active");
+    });
+
+    continueBtn.addEventListener("click", () => {
+      modalOverlay.classList.remove("active");
+    });
+
+    clearAllBtn.addEventListener("click", clearAllNames);
+
+    // Theme toggle
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      themeToggle.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
+    });
+
+    // Check if dark mode was previously enabled
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add("dark-mode");
+      themeToggle.textContent = "☀️";
+    }
+
+    // Save dark mode preference
+    themeToggle.addEventListener("click", () => {
+      localStorage.setItem('darkMode', document.body.classList.contains("dark-mode"));
+    });
+
+    // Initial setup
+    loadNames();
+    updateNamesList();
+    setupWheel();
+  </script>
+</body>
+</html>
